@@ -1,0 +1,48 @@
+{
+  "target": {
+    "ticker": "2330.TW",
+    "name": "TSMC"
+  },
+  "customers": [
+    {
+      "name": "Apple",
+      "ticker": "AAPL",
+      "relation": "estimated major customer",
+      "revenue_weight_pct": 20.0,
+      "weight_basis": "disclosed share, analyst estimate, or midpoint of a stated range",
+      "pass_through_factor": 0.8,
+      "confidence": "medium",
+      "source": "annual report, investor presentation, or reputable supply-chain source URL",
+      "last_verified": "YYYY-MM-DD",
+      "evidence": [
+        {
+          "type": "recent_news",
+          "title": "Article or filing title",
+          "url": "https://example.com/source",
+          "published_date": "YYYY-MM-DD",
+          "claim": "Short supply-chain claim supported by this source"
+        }
+      ]
+    },
+    {
+      "name": "NVIDIA",
+      "ticker": "NVDA",
+      "relation": "estimated AI accelerator customer",
+      "revenue_weight_pct": 15.0,
+      "weight_basis": "disclosed share, analyst estimate, or midpoint of a stated range",
+      "pass_through_factor": 1.0,
+      "confidence": "medium",
+      "source": "annual report, investor presentation, or reputable supply-chain source URL",
+      "last_verified": "YYYY-MM-DD",
+      "evidence": [
+        {
+          "type": "recent_news",
+          "title": "Article or filing title",
+          "url": "https://example.com/source",
+          "published_date": "YYYY-MM-DD",
+          "claim": "Short supply-chain claim supported by this source"
+        }
+      ]
+    }
+  ]
+}
