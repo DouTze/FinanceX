@@ -359,7 +359,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
         default="google",
         help="Search source to use. Default 'google' (fast, zh-TW). GDELT is rate-limited and runs sequentially.",
     )
-    parser.add_argument("--out", default=None, help="Output directory. Defaults to .cache/tw-supply-chain-valuation/news_<target>_<timestamp>.")
+    parser.add_argument("--out", default=None, help="Output directory. Defaults to .cache/mfg-tw/news_<target>_<timestamp>.")
     parser.add_argument("--timeout", type=int, default=15, help="HTTP timeout in seconds.")
     return parser
 
@@ -384,7 +384,7 @@ def main() -> int:
         out_dir = args.out
     else:
         stamp = generated_at.strftime("%Y%m%dT%H%M%SZ")
-        out_dir = os.path.join(".cache", "tw-supply-chain-valuation", f"news_{safe_name(args.target_name)}_{stamp}")
+        out_dir = os.path.join(".cache", "mfg-tw", f"news_{safe_name(args.target_name)}_{stamp}")
     ensure_dir(out_dir)
 
     all_items: list[dict[str, Any]] = []

@@ -1,9 +1,9 @@
 ---
-name: Taiwan Supply Chain Valuation
-description: Analyze Taiwan-listed stocks with supply-chain customer revenue momentum and produce a text-only valuation report. Use when the user asks whether a Taiwan stock is buyable, undervalued, overvalued, or wants FinanceX industry-chain analysis. Do not build or launch Streamlit or any web UI for this workflow.
+name: mfg-tw
+description: Analyze Taiwan-listed manufacturing stocks with supply-chain customer revenue momentum, normalized earnings, and industry-appropriate valuation methods, then produce a text-only valuation report. Use when the user asks whether a Taiwan manufacturing stock is buyable, undervalued, overvalued, or wants FinanceX industry-chain analysis. Do not build or launch Streamlit or any web UI for this workflow.
 ---
 
-# Taiwan Supply Chain Valuation
+# Taiwan Manufacturing Supply Chain Valuation
 
 ## Operating Mode
 
@@ -15,14 +15,16 @@ Run this workflow as a text-mode financial analysis inside Claude Code.
 - Use absolute dates for prices and financial periods.
 - State currency and market clearly, usually `TWD` for Taiwan prices and `USD` for US-listed customers.
 - Treat the result as decision support, not a guarantee. Do not claim a trade is certain to profit.
+- This workflow is optimized for Taiwan-listed manufacturers, including semiconductor, electronics, machinery, components, materials, automotive, and other product-based businesses.
+- Do not force the manufacturing workflow onto banks, insurers, pure software/platform companies, construction developers, REITs, or other materially different business models. Apply the sector exception rules below and state when the target is outside the workflow's core scope.
 
 ## Input Handling
 
 Accept short requests such as:
 
 ```text
-/tw-supply-chain-valuation 2330.TW 台積電 是否可買
-/tw-supply-chain-valuation 3529.TWO 力旺 因 AI ASIC 需求是否有上修空間
+/mfg-tw 2330.TW 台積電 是否可買
+/mfg-tw 3529.TWO 力旺 因 AI ASIC 需求是否有上修空間
 ```
 
 If the user gives only a Taiwan stock code, infer the company name when possible. If the user gives a 4-digit Taiwan code without a suffix, resolve whether it is listed or OTC:
@@ -38,7 +40,7 @@ Use the bundled scripts before making the final valuation whenever current marke
 
 Run all Python scripts through `uv`; do not call `python3` or a local virtualenv directly. Use `uv --cache-dir .cache/uv run python` for bundled scripts because they only depend on the Python standard library and should not require this repository to have a `pyproject.toml`. Keep the uv cache under `.cache/uv` so execution does not depend on writable global cache directories. If `uv` is unavailable, report that as an environment blocker instead of silently switching runtimes.
 
-If you need to write a temporary source-specific scraper that uses third-party packages, put it under `.cache/tw-supply-chain-valuation/<target>/` and run it with `uv --cache-dir .cache/uv run --with <package> python <script>`.
+If you need to write a temporary source-specific scraper that uses third-party packages, put it under `.cache/mfg-tw/<target>/` and run it with `uv --cache-dir .cache/uv run --with <package> python <script>`.
 
 1. Collect recent news candidates for current supply-chain evidence:
 
@@ -48,21 +50,21 @@ uv --cache-dir .cache/uv run python ${CLAUDE_SKILL_DIR}/scripts/fetch_recent_new
   --target-ticker <target-ticker> \
   --thesis "<user-thesis-or-catalyst>" \
   --days 45 \
-  --out .cache/tw-supply-chain-valuation/<target>/news
+  --out .cache/mfg-tw/<target>/news
 ```
 
-Read `.cache/tw-supply-chain-valuation/<target>/news/news_candidates.md`. Keep only articles that contain concrete supply-chain claims: named customer, named supplier, order, shipment, product allocation, capacity change, pricing, or end-market demand. Discard generic stock-price commentary and unsourced rumors.
+Read `.cache/mfg-tw/<target>/news/news_candidates.md`. Keep only articles that contain concrete supply-chain claims: named customer, named supplier, order, shipment, product allocation, capacity change, pricing, or end-market demand. Discard generic stock-price commentary and unsourced rumors.
 
 2. Download the selected articles and primary documents:
 
 ```bash
 uv --cache-dir .cache/uv run python ${CLAUDE_SKILL_DIR}/scripts/fetch_source_pages.py \
-  --out .cache/tw-supply-chain-valuation/<target>/sources \
+  --out .cache/mfg-tw/<target>/sources \
   --url "https://example.com/selected-news-1" \
   --url "https://example.com/selected-news-2"
 ```
 
-Read `.cache/tw-supply-chain-valuation/<target>/sources/sources.md` and relevant extracted text files before finalizing customer relationships or weights.
+Read `.cache/mfg-tw/<target>/sources/sources.md` and relevant extracted text files before finalizing customer relationships or weights.
 
 3. Rewrite the task-local customer map from the news evidence. This is mandatory.
 
@@ -70,7 +72,7 @@ Read `.cache/tw-supply-chain-valuation/<target>/sources/sources.md` and relevant
 ${CLAUDE_SKILL_DIR}/templates/customers.json
 ```
 
-Write or overwrite the working copy under `.cache/tw-supply-chain-valuation/<target>/customers.json`. Do not reuse a previous `customers.json` row unless the current news/source review still supports it. Fill in:
+Write or overwrite the working copy under `.cache/mfg-tw/<target>/customers.json`. Do not reuse a previous `customers.json` row unless the current news/source review still supports it. Fill in:
 
 - `target.ticker` and `target.name`
 - up to five `customers`
@@ -82,7 +84,7 @@ Every customer row must include at least one concrete evidence item with `type`,
 
 ```bash
 uv --cache-dir .cache/uv run python ${CLAUDE_SKILL_DIR}/scripts/validate_customer_map.py \
-  --customers-file .cache/tw-supply-chain-valuation/<target>/customers.json \
+  --customers-file .cache/mfg-tw/<target>/customers.json \
   --max-age-days 180 \
   --strict
 ```
@@ -93,12 +95,12 @@ If validation fails, fix `customers.json` and rerun validation. Do not continue 
 
 ```bash
 uv --cache-dir .cache/uv run python ${CLAUDE_SKILL_DIR}/scripts/fetch_source_pages.py \
-  --out .cache/tw-supply-chain-valuation/<target>/sources \
+  --out .cache/mfg-tw/<target>/sources \
   --url "https://example.com/source-1" \
   --url "https://example.com/source-2"
 ```
 
-Read `.cache/tw-supply-chain-valuation/<target>/sources/sources.md` and any relevant extracted text files before finalizing customer relationships or weights.
+Read `.cache/mfg-tw/<target>/sources/sources.md` and any relevant extracted text files before finalizing customer relationships or weights.
 
 6. Fetch quote and quarterly revenue data:
 
@@ -106,11 +108,11 @@ Read `.cache/tw-supply-chain-valuation/<target>/sources/sources.md` and any rele
 uv --cache-dir .cache/uv run python ${CLAUDE_SKILL_DIR}/scripts/fetch_financial_data.py \
   --target <target-ticker> \
   --target-name "<target-company-name>" \
-  --customers-file .cache/tw-supply-chain-valuation/<target>/customers.json \
-  --out .cache/tw-supply-chain-valuation/<target>/financials
+  --customers-file .cache/mfg-tw/<target>/customers.json \
+  --out .cache/mfg-tw/<target>/financials
 ```
 
-Read `.cache/tw-supply-chain-valuation/<target>/financials/finance_data.md` first, then inspect `finance_data.json` or `quarterly_revenue.csv` if the numbers need auditing.
+Read `.cache/mfg-tw/<target>/financials/finance_data.md` first, then inspect `finance_data.json` or `quarterly_revenue.csv` if the numbers need auditing.
 
 If a bundled script fails because the network, Yahoo Finance endpoint, or a source page is unavailable, do not invent data. Use available web/search tools or write a small source-specific scraper in the task cache, run it, and continue only after you have source-backed data. Mark unresolved gaps as `N/A` or `資料不足`.
 
@@ -155,7 +157,9 @@ Use recent news to discover current supply-chain changes, then corroborate with 
 ## Analysis Workflow
 
 1. Normalize the target
-   - Identify target ticker, company name, exchange, sector, and main business lines.
+   - Identify target ticker, company name, exchange, sector, main business lines, and whether the company is actually a manufacturer.
+   - For manufacturers, classify the earnings pattern as one of: `穩定型製造`, `景氣循環型製造`, `高成長製造`, or `虧損/轉機型製造`.
+   - Record the main products, production capacity, utilization rate when available, gross margin drivers, customer concentration, inventory cycle, capital intensity, and net cash or net debt position.
    - Record the latest verified stock price, price date/time, and data source.
    - If the latest price cannot be verified, do not make a buy/sell conclusion; mark the conclusion as `資料不足`.
 
@@ -174,7 +178,7 @@ Use recent news to discover current supply-chain changes, then corroborate with 
      - Taiwan OTC: append `.TWO`.
      - Private or unlisted entities: use `N/A` and explain how they are proxied.
    - Estimate revenue exposure weights. If reliable weights are unavailable, use ranges and explain the basis.
-   - Write the working customer map to `.cache/tw-supply-chain-valuation/<target>/customers.json`.
+   - Write the working customer map to `.cache/mfg-tw/<target>/customers.json`.
 
 4. Measure customer momentum
    - Run `scripts/fetch_financial_data.py` after the customer map is ready.
@@ -195,14 +199,51 @@ expected_revenue_growth =
    - Use a lower factor for indirect end-market proxies, inventory digestion, pricing pressure, or low visibility.
    - Produce base, bull, and bear scenarios when uncertainty is high.
 
-6. Convert momentum into valuation
-   - Use at least one valuation lens that fits available data: P/E, EV/Sales, PEG, peer multiple, dividend yield, or DCF-lite.
-   - Prefer ranges over false precision.
-   - Compare estimated fair value with the latest verified market price.
+6. Build normalized manufacturing earnings
+   - Do not apply a valuation multiple directly to unadjusted current EPS when earnings are at a cyclical peak or trough.
+   - Start from the latest four quarters and explicitly remove material one-time items, including disposal gains, impairment, litigation, unusual tax effects, large FX gains or losses, and non-recurring subsidies.
+   - For `穩定型製造`, estimate forward EPS from current revenue, expected transmitted growth, sustainable gross margin, operating expense ratio, interest, tax, and diluted shares.
+   - For `景氣循環型製造`, use mid-cycle or normalized EPS. Prefer a 3-5 year average operating margin or return on capital applied to current-scale revenue or invested capital. Do not treat peak-cycle EPS as sustainable.
+   - For `高成長製造`, estimate forward EPS only when capacity, utilization, product mix, and margin assumptions are source-backed. Separate volume growth from ASP and margin changes.
+   - For `虧損/轉機型製造`, do not calculate a conventional P/E. First determine whether losses are temporary, cyclical, or structural.
+   - Reconcile the earnings forecast with supply-chain momentum. Customer growth is an input, not a direct substitute for the target company's own revenue, margin, capex, and working-capital analysis.
+   - If normalized or forward EPS cannot be supported by audited filings, company guidance, or clearly explained assumptions, return `資料不足` instead of inventing a fair value.
+
+7. Select the valuation method
+   - Default manufacturing method: normalized forward P/E with same-subsector peer comparison.
+   - Use P/E only when normalized or forward EPS is positive and meaningful. Compare the target with peers that have similar products, growth, margin structure, cyclicality, and capital intensity; do not use a broad electronics or market-wide average as the only benchmark.
+   - Set the justified P/E range from the target's own historical normalized range and current comparable-company range. Adjust downward for high customer concentration, weak balance sheet, peak-cycle margins, low visibility, or governance risk. Adjust upward only for source-backed superior growth, margins, return on capital, or competitive advantage.
+   - Calculate manufacturing fair value as:
+
+```text
+fair_value_per_share = normalized_or_forward_EPS * justified_PE
+```
+
+   - Use separate bear, base, and bull EPS assumptions and corresponding P/E ranges. Do not create scenarios by changing only the multiple while leaving operating assumptions unchanged.
+   - Use EV/EBITDA as a secondary cross-check for capital-intensive manufacturers, large depreciation differences, or peer groups with materially different leverage. Convert enterprise value back to equity value:
+
+```text
+equity_value = enterprise_value - total_debt + cash_and_equivalents
+fair_value_per_share = equity_value / diluted_shares
+```
+
+   - Use EV/Sales only as a fallback for a high-growth or temporarily loss-making business whose future positive margin is defensible. It is most relevant to pure software, platform, or subscription businesses and is not the default for hardware manufacturing. State the assumed normalized margin because a revenue multiple without a margin path is not a complete valuation.
+   - Use P/B as the primary method for banks and insurers, together with ROE, asset quality, capital adequacy, and growth. For manufacturers, use P/B only as a secondary asset-value or downside check when tangible assets are economically meaningful; do not value an ordinary profitable manufacturer primarily on P/B.
+   - Use project NAV, asset value, or normalized earnings for construction and project-based developers. Use DCF only when project timing, contracted cash flows, capex, and working capital can be forecast with reasonable confidence.
+   - DCF is a secondary scenario check, not a method selected merely because annual cash flow is volatile. If cash flow is highly unstable or forecast assumptions dominate the result, disclose the sensitivity and do not present DCF as precise.
+   - Dividend yield is a secondary return and downside check only for mature companies with stable payout policy and sustainable free cash flow. Do not use dividend yield as the primary valuation method for a growth or cyclical manufacturer.
+   - PEG may be shown only as a supplementary sanity check when the earnings growth estimate is positive, durable, and measured consistently. Never use PEG as the sole fair-value method.
+   - Prefer ranges over false precision. If two valid methods materially disagree, explain why and lower confidence instead of averaging them mechanically.
+
+8. Compare valuation with market price
+   - Compare the fair-value range with the latest verified market price.
+   - Show the exact EPS, multiple, net debt, diluted-share, and scenario assumptions used in the calculation.
+   - Distinguish between operating upside and multiple expansion. A buy case that depends mainly on a higher P/E requires stronger evidence than one supported by earnings growth.
    - The final rating should be one of: `可買`, `觀望`, `不建議買`, or `資料不足`.
 
-7. Check contrary evidence
+9. Check contrary evidence
    - Explicitly list risks that could break the thesis: customer concentration, margin compression, inventory cycles, FX, capex cycles, export controls, product delays, valuation multiple contraction, and data quality.
+   - For manufacturers, also test utilization, inventory days, receivable days, order visibility, pricing pressure, yield rate, raw-material costs, and whether customers are double-ordering.
    - If the conclusion depends on one weak assumption, call that out.
 
 ## Output Format
@@ -232,10 +273,13 @@ Use this structure by default:
 
 ## 估值
 
-- Base：...
-- Bull：...
-- Bear：...
-- 使用的倍數或折現假設：...
+- 公司類型：穩定型製造 / 景氣循環型製造 / 高成長製造 / 虧損或轉機型製造 / 非製造業例外
+- 主要方法：正常化本益比 / EV/EBITDA / EV/Sales / P/B / Project NAV / DCF
+- Bear：EPS 或營運假設 × 倍數 = 合理價
+- Base：EPS 或營運假設 × 倍數 = 合理價
+- Bull：EPS 或營運假設 × 倍數 = 合理價
+- 交叉檢查：...
+- 方法限制：...
 
 ## 反向證據與風險
 

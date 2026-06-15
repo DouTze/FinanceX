@@ -4,7 +4,7 @@
 
 ## Branch 的規範
 
-本規範沿用 Softbi Java team 的規範，目前主要分支有：
+本規範目前主要分支有：
 
 - `master`：正式環境上的版本分支
 - `develop`：用於開發的基礎分支
@@ -84,7 +84,7 @@ Footer:
 ### feat
 
 ```git
-feat: 
+feat:
 
 需求描述：
 
@@ -159,13 +159,13 @@ issue #863
 ### fix
 
 ```bash
-fix: 
+fix:
 
-問題： 
+問題：
 
 原因：
 
-調整項目: 
+調整項目:
 
 ```
 
@@ -264,7 +264,7 @@ issue #1229
 ### style
 
 ```bash
-style: 
+style:
 
 調整原因：
 
@@ -296,7 +296,7 @@ style: message 頁面，對 Component 做 Beautifier
 ### refactor
 
 ```bash
-refactor: 
+refactor:
 
 需求描述：
 
@@ -332,7 +332,7 @@ refactor: 重構取得「簽核流程種類名稱」邏輯
 ### perf
 
 ```bash
-perf: 
+perf:
 
 需求描述：
 

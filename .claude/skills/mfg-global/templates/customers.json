@@ -1,0 +1,28 @@
+{
+  "target": {
+    "ticker": "<TARGET_TICKER>",
+    "name": "<TARGET_COMPANY_NAME>"
+  },
+  "customers": [
+    {
+      "name": "<CUSTOMER_NAME>",
+      "ticker": "<CUSTOMER_TICKER>",
+      "relation": "estimated major customer",
+      "revenue_weight_pct": 20.0,
+      "weight_basis": "disclosed share, analyst estimate, or midpoint of a stated range",
+      "pass_through_factor": 0.8,
+      "confidence": "medium",
+      "source": "annual report, investor presentation, or reputable supply-chain source URL",
+      "last_verified": "YYYY-MM-DD",
+      "evidence": [
+        {
+          "type": "recent_news",
+          "title": "Article or filing title",
+          "url": "https://example.com/source",
+          "published_date": "YYYY-MM-DD",
+          "claim": "Short supply-chain claim supported by this source"
+        }
+      ]
+    }
+  ]
+}

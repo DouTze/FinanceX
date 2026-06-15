@@ -1,0 +1,4 @@
+interface:
+  display_name: "Global Manufacturing Valuation"
+  short_description: "Analyze global manufacturers and supply chains"
+  default_prompt: "Use $mfg-global to analyze a listed manufacturer and estimate its fair value."

@@ -144,7 +144,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Download source URLs and extract readable text.")
     parser.add_argument("urls", nargs="*", help="URLs to fetch.")
     parser.add_argument("--url", action="append", default=[], help="URL to fetch. Can be repeated.")
-    parser.add_argument("--out", default=None, help="Output directory. Defaults to .cache/tw-supply-chain-valuation/sources_<timestamp>.")
+    parser.add_argument("--out", default=None, help="Output directory. Defaults to .cache/mfg-global/sources_<timestamp>.")
     parser.add_argument("--timeout", type=int, default=25, help="HTTP timeout in seconds.")
     return parser
 
@@ -157,7 +157,7 @@ def main() -> int:
         return 2
 
     stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    out_dir = args.out or os.path.join(".cache", "tw-supply-chain-valuation", f"sources_{stamp}")
+    out_dir = args.out or os.path.join(".cache", "mfg-global", f"sources_{stamp}")
     raw_dir = os.path.join(out_dir, "raw")
     text_dir = os.path.join(out_dir, "text")
     ensure_dir(raw_dir)

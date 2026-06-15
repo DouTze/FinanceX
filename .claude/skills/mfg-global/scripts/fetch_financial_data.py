@@ -399,12 +399,12 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Fetch Yahoo Finance quote and quarterly revenue data for FinanceX valuation inputs."
     )
-    parser.add_argument("--target", required=True, help="Target ticker, for example 2330.TW or 3529.TWO.")
+    parser.add_argument("--target", required=True, help="Provider ticker, for example CAT, 7203.T, or SIE.DE.")
     parser.add_argument("--target-name", default=None, help="Optional target company name.")
     parser.add_argument("--customers", default=None, help="Comma-separated customer tickers, for example AAPL,NVDA.")
     parser.add_argument("--customers-file", default=None, help="JSON file with target and customers metadata.")
     parser.add_argument("--extra-tickers", default=None, help="Additional comma-separated tickers to fetch as proxies.")
-    parser.add_argument("--out", default=None, help="Output directory. Defaults to .cache/tw-supply-chain-valuation/<target>_<timestamp>.")
+    parser.add_argument("--out", default=None, help="Output directory. Defaults to .cache/mfg-global/<target>_<timestamp>.")
     parser.add_argument("--timeout", type=int, default=20, help="HTTP timeout in seconds.")
     return parser
 
@@ -429,7 +429,7 @@ def main() -> int:
         out_dir = args.out
     else:
         stamp = generated_at.strftime("%Y%m%dT%H%M%SZ")
-        out_dir = os.path.join(".cache", "tw-supply-chain-valuation", f"{safe_name(args.target)}_{stamp}")
+        out_dir = os.path.join(".cache", "mfg-global", f"{safe_name(args.target)}_{stamp}")
     ensure_dir(out_dir)
 
     quotes, quote_errors = fetch_quotes(symbols, timeout=args.timeout)
